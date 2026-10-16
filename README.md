@@ -17,6 +17,17 @@ scripts/                 번호순 스크립트
 
 `data/`와 `models/`는 git에서 제외된다(코드·문서만 커밋). 모든 명령은 저장소 루트에서 실행한다.
 
+## 실행 방법
+
+uv 프로젝트다(Python 3.12, torch는 CUDA 12.6 빌드). 환경 구성 후 스크립트는 `uv run python scripts/<파일>`로 실행한다.
+
+```
+uv sync
+uv run python scripts/07_verify_manifest.py
+```
+
+`env/requirements-lock.txt`는 이전 환경의 기록으로 보존하며, 현재 의존성은 `pyproject.toml`·`uv.lock`이 기준이다.
+
 ## 스크립트 (실행 순서)
 
 | 번호 | 파일 | 역할 |
@@ -27,6 +38,8 @@ scripts/                 번호순 스크립트
 | 03 | `03_rename_recent_pdfs.py` | 최근 PDF(`Minutes ...(Month YYYY).pdf`)를 회의일 기준 이름으로 복사 |
 | 04 | `04_verify_raw_pdfs.py` | WCB PDF 147건을 마스터와 대조(파일명·누락·중복·무결성·내용 월) 후 복사 |
 | 05 | `05_build_pdf_manifest.py` | `data/raw/pdf`의 크기·쪽수·SHA-256 매니페스트 작성, 마스터와 1:1 검사 |
+| 07 | `07_verify_manifest.py` | 매니페스트·마스터·WCB `final_data.csv` 무결성 검사(불일치 시 종료코드 1) |
+| 08 | `08_inspect_pdf_structure.py` | PDF 구조 진단(앵커 문구·섹션 제목·머리글/꼬리말·각주) → `data/interim/structure_report.csv` |
 
 01, 03, 04의 기본 경로는 새 구조에 맞췄지만, 이 저장소에는 원본 입력(`data/raw/recent_pdf`, 원래 WCB 파일명의 raw PDF)이 없어 그대로는 재실행되지 않는다. 03·04는 데이터 정리 때 한 번 실행한 이력용 스크립트다.
 
