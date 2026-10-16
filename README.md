@@ -6,9 +6,11 @@
 
 ```
 data/raw/pdf/            의사록 PDF 163개 (bok_minutes_YYYY-MM-DD.pdf, 읽기 전용)
-data/raw/wcb/            WCB 산출물: final_data.csv, bank_of_korea_metadata.json (읽기 전용)
+data/raw/wcb/            WCB 산출물: final_data.csv, bank_of_korea_metadata.json, wcb_hf_preview_69rows.csv (읽기 전용)
 data/raw/wcb/cleaned_md/ 연도별 정제 md 147개 (읽기 전용)
-data/metadata/           meeting_master.csv, raw_pdf_check.csv, pdf_manifest.csv
+data/metadata/           meeting_master.csv, raw_pdf_check.csv, pdf_manifest.csv, ko_release_dates.csv (한국어 의사록 공개일, 2023.4 이후 28회)
+docs/                    연구계획서, 주석 가이드(annotation_guide.md)
+plan.md                  작업 계획서(단계별 작업·일정·결정 목록)
 data/interim/            중간 산출물
 data/processed/          분석용 최종 데이터
 models/                  모델 가중치 (비어 있음, git 제외)
@@ -25,6 +27,23 @@ uv 프로젝트다(Python 3.12, torch는 CUDA 12.6 빌드). 환경 구성 후 �
 uv sync
 uv run python scripts/07_verify_manifest.py
 ```
+
+### API 키 (`.env`)
+
+저장소 루트의 `.env`에 키를 둔다(git 제외, 내용은 커밋하지 않는다).
+
+```
+ECOS_API_KEY=...     # 한국은행 ECOS (국고채·기준금리)
+OPENAI_API_KEY=...   # 토픽 라벨링 LLM (GPT-6.1 Sol) 용. 값은 사용자가 직접 입력
+```
+
+FRED는 키 없이 `fredgraph.csv`로 받는다. 키가 필요한 스크립트는 `.env`를 읽도록 실행한다.
+
+```
+uv run --env-file .env python scripts/<파일>
+```
+
+키가 필요 없는 스크립트는 `uv run python scripts/<파일>`로 충분하다.
 
 `env/requirements-lock.txt`는 이전 환경의 기록으로 보존하며, 현재 의존성은 `pyproject.toml`·`uv.lock`이 기준이다.
 
