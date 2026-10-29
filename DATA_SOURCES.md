@@ -6,8 +6,12 @@
 - `data/raw/wcb/`의 `bank_of_korea_metadata.json`은 회의일을 바로잡은 새 버전이다. 회의일 오류가 있는 구버전(`old_bank_of_korea_metadata.json`)은 가져오지 않았다.
 
 ## WCB 모델
-- Hugging Face: `gtfintechlab/model_WCB_stance_label`
-- 접근 승인 대기 중. 승인 전까지 `models/`는 비어 있다.
+- 공식 모델 Hugging Face `gtfintechlab/model_WCB_stance_label`은 접근 승인 대기 중이며 본 분석에는 쓰지 않는다. 대신 아래 공개 데이터로 논문 설정대로 재현 학습한 모델(`models/wcb_stance_replica/`)을 쓴다. 승인되면 코퍼스 예측 일치도 보고에만 사용한다.
+
+## WCB 공개 학습 데이터 (HF)
+- Hugging Face 데이터셋 `gtfintechlab/all_annotated_sentences_25000`, 서브셋 `5768`, `78516`, `944601`(분할 시드). 각 서브셋 train 17,500 / val 3,750 / test 3,750. 인증 없이 받았다(2026-10-30). 저장 위치: `data/raw/wcb_hf/{seed}/{train,val,test}.parquet`(읽기 전용). 취득 스크립트 `scripts/10_download_wcb_hf.py`, 점검 `scripts/11_check_wcb_hf.py`.
+- 라이선스: **CC BY-NC-SA 4.0**(비상업, 동일 조건 변경 허락). 이 데이터로 학습한 재현 가중치를 공개하려면 같은 라이선스를 적용한다.
+- 점검 결과: 분할 시드 944601의 `bank_of_korea` 행은 train 661 / val 169 / test 170(합 1,000)이며 `final_data.csv`와 문장·라벨이 모두 일치한다. 서브셋 안에 분할 간 중복 문장이 4~10건 있다(원본 그대로 둠).
 
 ## BOK 영문 의사록
 - 한국은행 영문 홈페이지(https://www.bok.or.kr/eng)의 통화정책 의사록 페이지. 회의별 PDF 링크는 `meeting_master.csv`의 `minutes_link` 열에 있다.

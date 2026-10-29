@@ -33,7 +33,7 @@
 | **진행 가능** | P3 WCB 라벨 방향 감사 (`final_data.csv` 사용) | 모델 불필요 |
 | **진행 가능** | P7 시장 데이터 수집(ECOS·FRED) | ECOS 키는 `.env`의 `ECOS_API_KEY`(완료, 값은 읽지 않음). FRED는 `fredgraph.csv`로 키 없이 수집 |
 | **진행 가능** | P4 중 모델 없이 준비 가능한 부분(추론 스크립트 골격, 입력 형식 점검) | `torch`·`transformers` 설치됨, GPU 인식 |
-| **진행** | P4 분류기 재현 학습 | 공식 WCB 모델(HF gated) 승인 지연 → 공개 데이터로 재현 학습(D3). 학습 전 |
+| **진행** | P4 분류기 재현 학습 | 공식 WCB 모델(HF gated) 승인 지연 → 공개 데이터로 재현 학습(D3). 학습·테스트 평가 완료(BOK 가중 F1 0.750, 논문 0.755). 추론(P4-c)은 P2 후 |
 | **해결** | HF 시드 분할 데이터 | 공개 데이터 `all_annotated_sentences_25000`을 `data/raw/wcb_hf/`에 받는다(P4-a). 분할 시드 944601 |
 | **차단** | P5-d 한국 맥락 감사 50문장, P6 이후 전부 | P4 산출물(문장별 스탠스)에 의존 |
 | **미착수** | 위원 토의 추출, 문장 분할, 표결 문장 제거, 토픽 라벨링, 분류기 추론, 지수 산출, 시장 데이터(ECOS·FRED) 수집 | `data/processed/` 비어 있음, `data/interim/`에 구조 진단 결과만 있음 |
@@ -177,14 +177,14 @@
 **P4-a. 데이터 (`data/raw/wcb_hf/{5768,78516,944601}/{train,val,test}.parquet`, 읽기 전용)**
 
 - [ ] 행 수(17.5k/3.75k/3.75k), 라벨 분포, `bank_name`별 행 수 확인
-- [ ] 시드 944601의 `bank_of_korea` 행을 `data/raw/wcb/final_data.csv`(1,000행)와 정규화 일치로 대조(700/150/150 예상), 라벨 일치 확인
+- [ ] 시드 944601의 `bank_of_korea` 행을 `data/raw/wcb/final_data.csv`(1,000행)와 정규화 일치로 대조(예상 700/150/150, **실제 661/169/170**), 라벨 일치 확인 — 결과는 `data/interim/wcb_hf_checks.txt`
 - [ ] 분할 간 문장 중복(train∩test 등) 없음 확인
 - [ ] `DATA_SOURCES.md`에 출처·라이선스(CC BY-NC-SA 4.0, 재현 가중치 공개 시 동일 라이선스) 기록
 
 **P4-b. 재현 학습·평가**
 
 - 학습: `scripts/12_train_wcb_replica.py` — roberta-large, 소문자 입력, 라벨 0 neutral/1 hawkish/2 dovish/3 irrelevant, AdamW, lr 1e-6, 유효 배치 32, bf16, 최대 50 epoch, 검증 가중 F1 조기 종료, 시드 944601. 테스트셋은 읽지 않는다. 출력 `models/wcb_stance_replica/`(`train_config.json`, `train_log.csv`, 최적 체크포인트, 학습 데이터 SHA-256, 패키지 버전)
-- 평가: `scripts/13_eval_wcb_replica.py` — 944601 테스트 전체와 BOK 행(약 150)의 가중·매크로 F1, 부트스트랩 95% CI(시드 고정), 혼동행렬. **테스트는 한 번만** 평가한다.
+- 평가: `scripts/13_eval_wcb_replica.py` — 944601 테스트 전체와 BOK 행(170)의 가중·매크로 F1, 부트스트랩 95% CI(시드 고정), 혼동행렬. **테스트는 한 번만** 평가한다.
 - 출력: `data/processed/table1_repro_f1.csv`, `data/interim/replica_confusion_bok.csv`
 - **완료 기준:** 논문 값(0.755±0.019)과의 차이를 보고한다. 통과 숫자 기준은 없다(Q2). 모델 재선택·재평가는 하지 않는다.
 
