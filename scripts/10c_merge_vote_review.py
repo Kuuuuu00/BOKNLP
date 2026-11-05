@@ -8,8 +8,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from vote_review_common import ALLOWED, KEY
+
 INTERIM = Path("data/interim")
-ALLOWED = {"flagged_vote": {"ok", "over"}, "candidate_miss": {"ok", "missed"}, "boilerplate": {"ok", "over"}}
 
 
 def main():
@@ -21,7 +22,7 @@ def main():
     args = ap.parse_args()
     base = pd.read_csv(args.audit, encoding="utf-8-sig", keep_default_na=False, dtype={"meeting_date": str})
     rev = pd.read_excel(args.review, dtype=str, keep_default_na=False)
-    k = ["meeting_date", "sent_id", "type"]  # 18 sentences are both candidate_miss and boilerplate, so type is part of the key
+    k = KEY
     rev["sent_id"] = rev["sent_id"].astype(int)
     base["sent_id"] = base["sent_id"].astype(int)
     errs = []
