@@ -58,6 +58,16 @@
 ### 1.1 재현성
 
 - 스크립트는 `scripts/`에 **09번부터** 번호순으로 추가한다. 이미 쓰인 번호는 00, 01, 03, 04, 05, 07, 08이다(02, 06은 결번).
+- **계획 번호 → 실제 파일명 (2026-11-06):** 계획서의 번호가 이미 커밋된 파일과 겹쳐서(10_, 11_, 14_), 기존 파일명은 그대로 두고 새 스크립트에만 겹치지 않는 번호를 줬다. 이후 단계의 스크립트 번호도 이 표의 규칙(겹치면 27번 이후로 이월)을 따른다.
+
+  | 단계 | plan.md의 번호 | 실제 파일 |
+  |---|---|---|
+  | P1 | 09 | `09_extract_discussion.py` |
+  | P2 | 10 | `10_split_sentences.py` (+ `10b_make_vote_review_xlsx.py`, `10c_merge_vote_review.py`) |
+  | P3 | 11 | `27_audit_wcb_labels.py` |
+  | P4-a/b | (10_download, 11_check, 12, 13) | `10_download_wcb_hf.py`, `11_check_wcb_hf.py`, `12_train_wcb_replica.py`, `13_eval_wcb_replica.py` |
+  | P4-c | 14 | `28_infer_stance.py` |
+  | P5 이후 | 14~26 | 미정(겹치는 번호는 이 표에 추가해 기록) |
 - 모든 스크립트는 입력·출력 경로를 인자로 받는다(`argparse`, 기본값은 이 문서의 경로). 저장소 루트에서 `uv run python scripts/<파일>`로 실행한다.
 - 중간 산출물은 `data/interim/`, 분석용 최종 데이터와 표는 `data/processed/`, 새로 받는 외부 원자료는 `data/raw/<출처>/`에 둔다. 기존 `data/raw/` 파일은 읽기 전용이므로 수정하지 않는다.
 - 파일 갱신이 생기는 단계가 끝나면 `uv run python scripts/07_verify_manifest.py`를 다시 돌려 원자료가 변하지 않았음을 확인한다.
@@ -179,6 +189,8 @@
   - [ ] 하방 금융불안 문장(주택가격 급락·연체 증가)의 라벨 방향 분포 별도 집계
 - **완료 기준:** (i) 후보 전체에 `judgment`가 채워짐. (ii) 매파/비둘기 열이 뒤바뀌었는지 여부(표 65 오기 판단)를 확정하는 한 줄 결론을 `data/processed/table1_label_audit.csv` 옆 메모에 기록. (iii) 예비 감사(일치 18 / 애매 2 / 불일치 1)와 전체 결과를 나란히 보고.
 
+**P3 진행 기록(2026-11-06, 후보 확정·사람 판정 대기):** `scripts/27_audit_wcb_labels.py`로 후보를 추출했다. 키워드 점검(서브에이전트) 결과 보완 전 후보 262행에서 오탐 약 10건과 누락 유형(달러, 외국인 증권자금, 국제금융시장 변동성, 전세 등)이 확인되어 "보수적 보완"을 선택했고(연구자 결정), 보완 후 후보는 **304행**(FinStab 159 / External 132 / 둘 다 13)이다(정규식 오류로 275행이 먼저 나왔으나 정정, 판정에는 쓰이지 않음). 후보 SHA-256 `daebcfb9…708d54`, 전체값은 `docs/progress/P3_2026-11-06.md`에 기록했고, **판정 시작 후에는 후보를 바꾸지 않는다.** 검수본 `data/interim/wcb_label_audit_review.xlsx`는 judgment·expected_direction·row_type을 비워 두었고 WCB 라벨은 별도 시트에 있다. 병합·집계 스크립트와 `table1_label_audit.csv`는 판정 후에 만든다.
+
 ### P4. 분류기 (재현 학습으로 진행, 공식 모델 승인은 기다리지 않음)
 
 - **목적:** 공개 데이터 `gtfintechlab/all_annotated_sentences_25000`으로 WCB 일반 스탠스 모델을 논문 설정(부록 C.3, C.7.1 표 19)대로 재현 학습하고, (a) 테스트셋에서 논문 F1(BoK 0.755)과 비교해 보고하고, (b) 전체 문장에 대해 추론한다(계획서 5.2절).
@@ -206,6 +218,8 @@
 - 입력은 `sent_norm`만 쓴다. `is_vote`·`is_boilerplate` 행도 **추론은 하되** 지수 산출(P6)에서 제외한다(나중에 규칙을 바꿔도 재추론하지 않도록).
 - 출력: `data/interim/sentence_stance.csv` — `sent_id, pred_label, p_hawkish, p_dovish, p_neutral, p_irrelevant, model_revision`
 - **완료 기준:** `sentences.csv`의 모든 `sent_id`에 예측이 있다(행 수 일치, 결측 0). 같은 입력을 다시 돌려 예측이 동일(결정적 실행).
+
+**P4-c 진행 기록(2026-11-06, 완료):** `scripts/28_infer_stance.py`로 `sentences.csv` 11,362문장 전부(표결·도입 문장 포함)를 추론해 `data/interim/sentence_stance.csv`를 만들었다. max_length = 103(학습과 동일, 연구자 결정). 103토큰 초과 70문장(0.62%), 512 설정과 예측이 다른 문장 18개(16개 회의)이며 512 결과는 `sentence_stance_len512.csv`에 보존만 한다(본 분석 미사용). 검증셋 가중 F1 0.739364 (train_log 최적 epoch 0.740185, 차이 −0.000821 ≤ 0.001). 같은 설정 2회 실행에서 예측 100% 동일, 확률 최대 차이 0. 라벨 분포 hawkish 3,754 / dovish 4,075 / neutral 3,331 / irrelevant 202. 서브에이전트 점검은 `docs/progress/P4c_2026-11-06.md`에 정리했다.
 
 ### P5. 토픽 라벨링과 한국 맥락 감사
 
