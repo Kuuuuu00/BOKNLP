@@ -137,7 +137,7 @@ date: "2026년 10월 17일"
 **표결 의견 문장 제거:** 원문에 정규식을 적용한다. 대상 패턴의 예는 다음과 같다.
 
 - "Most/A majority of members shared the opinion that … (raise/lower/cut/keep) the Base Rate …"
-- "it would be (appropriate/desirable/best) to (raise/lower/cut/keep/leave/hold) the Base Rate … (at this meeting/this month)"
+- "it would be (appropriate/desirable/best) to (raise/lower/cut/keep/leave/hold) the Base Rate … (at this meeting/this month/during the intermeeting period)"
 - "argued that the Base Rate should be kept …"
 - 검수: 문서 20개를 직접 확인해 놓친 비율과 과잉 제거 비율을 보고한다.
 

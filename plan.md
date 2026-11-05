@@ -155,6 +155,12 @@
 
 **P2 진행 기록(2026-10-30, 사람 검수 대기):** `scripts/10_split_sentences.py` 구현·실행 완료(11,362문장, 163문서, `sent_id` 회의 내 연속). 표결 판정은 주석 가이드 **v1.2** C2를 따른다(결정+향후 혼합 문장은 A+B이면 vote, 조건 B 없는 구체적 결정 문장은 (a)(b) 충족 시 vote, 조건 B 표현 확장, 어휘 확장, 수치 없는 개별 위원 의견). 사람 검수는 `data/interim/audit_votes_20.csv`(flagged_vote 163 / candidate_miss 110 / boilerplate 35)로 진행하고, 완료 기준 (ii)는 검수 후 판단한다.
 
+**P2 재실행 기록(2026-11-06, 가이드 v1.3, 사람 검수 대기):** 2차 교차 점검(90문장, 일치율 93.3%)의 누락 3건을 규칙에 반영했다(연구자 결정). 조건 B에 `during the intermeeting period`, 결정 단서에 `resolved`·`found (it) appropriate/desirable`(단독 `found`는 표지 아님). 진단 결과 3번(2021-02-25 #70)은 `found`가 아니라 (a)에서 탈락했으므로(연구자 선택) (a)에 "to maintain/keep/hold/leave the current level of the Base Rate" 어순을 추가했다. 분할 로직은 그대로다.
+- 불변 조건: 11,362문장·163회의, `sent_raw`·`sent_norm`·`is_boilerplate` 변경 0건. 바뀐 것은 `is_vote`·`vote_rule`뿐이다.
+- 차이: `is_vote` 0→1 6건(2011-06-10 #22 resolved, 2021-02-25 #70 (a) 어순, during 표지로 2013-05-09 #15·2015-12-10 #27·2016-02-16 #20·2016-04-19 #41), 1→0 0건. `vote_rule`만 `noB_concrete_decision`→`action_base_rate_this_meeting`으로 바뀐 것 18건. 검수 20문서에는 바뀐 문장이 없어 `audit_votes_20.csv`는 v1.2와 내용이 같다(163/110/35).
+- 서브에이전트 점검(참고용): 6건 중 2015-12-10 #27, 2016-04-19 #41은 "while holding / with the Base Rate kept …" 부대 구문이라 가이드 취지상 not_vote에 가깝다는 의견. 규칙은 바꾸지 않기로 했다(연구자 결정). 기존 과잉 3건(2016-07-14 #29 등)과 2022-11-24 #114(Base Rate 단어 없는 인상 지지 문장)는 미결로 남긴다.
+- 검수본: `data/interim/audit_votes_20_review.xlsx`(`scripts/10b_make_vote_review_xlsx.py`), 판정 병합 `scripts/10c_merge_vote_review.py`(키 = meeting_date, sent_id, type: 18문장이 candidate_miss와 boilerplate에 중복).
+
 ### P3. WCB 라벨 방향 감사 (전체)
 
 - **목적:** `final_data.csv`에서 원화·외환·주택·부채·금리차 관련 문장 전체의 방향이 5.3절 기준과 맞는지 감사해 "가이드 표 65 오기" 판단을 확정한다(계획서 4.4절, 5.5절).

@@ -1,13 +1,14 @@
 ---
 title: "BOK 의사록 주석 가이드"
-version: "v1.2 (2026-10-30)"
+version: "v1.3 (2026-11-06)"
 applies_to: "연구계획서 5.1·5.3·5.4·5.5절, plan.md P1·P2·P3·P5"
 ---
 
-# BOK 의사록 주석 가이드 v1.2
+# BOK 의사록 주석 가이드 v1.3
 
 변경 이력: v1.0 → v1.1 (2026-10-17) B3에 대칭 사례 추가(연구자 결정 D11), 부록에 LLM 실행 설정(GPT-6.1 Sol, Responses API 구조화 출력) 명시.
 v1.1 → v1.2 (2026-10-30) C2에 표결 판정 보완 3건 추가(P2 패턴 조사 후 연구자 결정): 결정+향후 혼합 문장, 이번 회의 표지(조건 B) 없는 구체적 결정 문장, 조건 B 표현 확장.
+v1.2 → v1.3 (2026-11-06) C2 보완: 조건 B에 `during the intermeeting period` 추가, 결정 단서에 `resolved`와 `found (it) appropriate/desirable` 추가(연구자 결정, P2 2차 교차 점검 후), "maintain/keep/hold/leave the current level of the Base Rate" 어순을 구체적 결정 (a)에 추가.
 
 이 문서는 사람과 LLM이 **같은 규칙**으로 판정하도록 만든 기준이다. 세 부분으로 나뉜다.
 
@@ -165,8 +166,8 @@ WCB 라벨(P3) 또는 WCB 모델 예측(P5-d)의 **매파·비둘기 방향**이
    - (a) 구체적인 이번 결정이 명시됨: "by N bp / by 0.25 percentage points", "to X%", "at its current (X%) level", "unchanged / on hold at the current level"
    - (b) 향후 표현이 없음: going forward, further(인하·인상의 추가를 뜻할 때), in the future, next meeting(s), if/should 조건문
    - 예(표결): "…the member deemed it appropriate to cut the Base Rate by 25bp." / "…the member took the view that it would be desirable to keep the Base Rate at its current 1.75% level."
-3. **조건 B 표현 확장:** 조건 B에 for / in / at this meeting, for the ensuing month를 추가한다(기존: at this/the present/current meeting, this month, this time, for the intermeeting period, until the next (MPB) meeting). "for now"는 조건 B가 아니다.
-4. **표현 확장 (P2 교차 점검 후, 연구자 결정 2026-10-30):** 기준금리 행동 표현에 adjust / upward·downward adjustment, 수치 표현에 "by 0.25 of a percentage point", 결정 단서에 agreed / decided / resolution / judged / deemed, "After the (detailed) discussions … above, … agreed/decided" 변형을 포함한다. 조건 B 없는 구체적 결정 문장(위 2)의 (b)는 문장 **전체**에서 향후 표현을 검사한다(근거 절의 "future" 등도 포함).
+3. **조건 B 표현 확장:** 조건 B에 for / in / at this meeting, for the ensuing month를 추가한다(기존: at this/the present/current meeting, this month, this time, for the intermeeting period, **v1.3: during the intermeeting period**, until the next (MPB) meeting). "for now"는 조건 B가 아니다.
+4. **표현 확장 (P2 교차 점검 후, 연구자 결정 2026-10-30):** 기준금리 행동 표현에 adjust / upward·downward adjustment, 수치 표현에 "by 0.25 of a percentage point", 결정 단서에 agreed / decided / resolution / judged / deemed, "After the (detailed) discussions … above, … agreed/decided" 변형을 포함한다. **v1.3 추가:** 결정 단서에 `resolved`("After the (detailed) discussions … above, … resolved …" 변형 포함)와 `found (it) appropriate/desirable`을 넣는다. `found`는 단독으로 표결 표지가 아니다. 조건 A(기준금리 행동 + Base Rate)가 있고, 조건 B가 있거나 위 2의 (a) 구체적 결정과 (b) 문장 전체에 향후 표현 없음을 만족할 때만 표결 문장이다. 또 (a)에 "to maintain/keep/hold/leave the current level of the Base Rate" 어순을 추가한다("while maintaining …" 같은 부대 서술은 제외). 조건 B 없는 구체적 결정 문장(위 2)의 (b)는 문장 **전체**에서 향후 표현을 검사한다(근거 절의 "future" 등도 포함).
 5. **구체적 수치 없는 개별 위원 의견:** "One/Another member … (opinion/view) … rate should be raised/cut/kept" 형태는 수치와 조건 B가 없어도 표결 문장이다.
 
 ## C3. 도입 문장 (`is_boilerplate`)

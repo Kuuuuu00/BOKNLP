@@ -1,6 +1,6 @@
 """P2: split discussion blocks into sentences and FLAG (never delete) vote and boilerplate sentences.
 
-Rules: docs/annotation_guide.md C2 (v1.2) and C3.
+Rules: docs/annotation_guide.md C2 (v1.3) and C3.
 uv run python scripts/10_split_sentences.py
 Outputs (data/interim): sentences.csv, sentence_count_by_meeting.csv, split_diagnostics/*.csv, audit_votes_20.csv
 """
@@ -65,15 +65,15 @@ BOILERPLATE = [
     ("c_each_member_expressed", re.compile(r"^at the\b.*\bmeeting\b.*\beach member expressed\b", re.I)),
 ]
 
-# ---------------------------------------------------------------- vote (guide C2 v1.2)
+# ---------------------------------------------------------------- vote (guide C2 v1.3)
 ACTION = re.compile(r"\b(?:rais\w*|rise|hik\w*|increas\w*|lower\w*|cut\w*|reduc\w*|keep\w*|kept|leav\w*|left|hold\w*|held|maintain\w*|freez\w*|froze|ease|easing|tighten\w*|adjust\w*|upward|downward|unchanged|on hold)\b", re.I)
 BASE = re.compile(r"\bbase rate\b", re.I)
 COND_B = re.compile(
-    r"\b(?:(?:at|for|in) (?:this|the present|the current) meeting|this month|this time|for the intermeeting period"
+    r"\b(?:(?:at|for|in) (?:this|the present|the current) meeting|this month|this time|(?:for|during) the intermeeting period"
     r"|until the next (?:\w+ ){0,4}meeting|for the ensuing month)\b",
     re.I,
 )
-AFTER_DISC = re.compile(r"^\(?\s*after the (?:detailed )?discussions\b[^,]{0,40}\babove\b.*\b(?:agreed|decided)\b", re.I)
+AFTER_DISC = re.compile(r"^\(?\s*after the (?:detailed )?discussions\b[^,]{0,40}\babove\b.*\b(?:agreed|decided|resolved)\b", re.I)
 NAMED_DISSENT = re.compile(r"\b(?:Mr|Dr|Ms|Mrs)\.?\s.*\b(?:dissent\w*|clear opposition|argued for)\b", re.I)
 MEMBER_PROPOSED = re.compile(r"^\(?\s*(?:one|another|to begin,? one)\s+(?:other\s+)?member\s+(?:proposed|viewed it as appropriate)\b.*\bbase rate\b", re.I)
 MEMBER_RATE_SHOULD = re.compile(
@@ -84,6 +84,7 @@ CONCRETE = re.compile(
     r"\bby\s+\d+(?:\.\d+)?\s?(?:of a\s+)?(?:bp|basis points?|percentage points?|%p|percent(?:age)? points?)\b"
     r"|\bto\s+\d+(?:\.\d+)?\s?%"
     r"|\bat\s+(?:its|the)\s+current(?:\s+[\w.%]+){0,3}\s+level\b"
+    r"|\b(?:to|that)\s+(?:maintain|keep|hold|leave)\s+the\s+(?:current|present)\s+level\s+of\s+the\s+(?:Bank of Korea\s+)?Base Rate\b"
     r"|\b(?:unchanged|on hold)\b",
     re.I,
 )
@@ -92,7 +93,7 @@ FUTURE = re.compile(
     r"|\bfurther\s+(?:\w+\s+){0,2}(?:cuts?|hikes?|increases?|reductions?|rises?|tightening|easing|adjustments?|changes?|raising|lowering|cutting|raise|lower)\b",
     re.I,
 )
-CUE = re.compile(r"\b(?:appropriate|desirable|preferable|advisable|warranted|better|best|opinion|view|argued|proposed|favou?r\w*|supported|agreed|decided|resolution|judged|deemed)\b", re.I)
+CUE = re.compile(r"\b(?:appropriate|desirable|preferable|advisable|warranted|better|best|opinion|view|argued|proposed|favou?r\w*|supported|agreed|decided|resolution|judged|deemed|resolved)\b|\bfound\s+(?:it\s+)?(?:appropriate|desirable)\b", re.I)
 
 
 def classify(s):
