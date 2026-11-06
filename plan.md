@@ -31,7 +31,7 @@
 | **완료** | WCB 라벨 `final_data.csv`: 1,000행, 열 `sentences, stance_label, time_label, certain_label, year`(2010~2024). stance 분포 dovish 343 / hawkish 340 / neutral 281 / irrelevant 36 | `final_data.csv` 직접 집계 |
 | **진행 가능** | P1 위원 토의 범위 추출, P2 문장 분할·표결 문장 표시 | PDF와 구조 진단 완료 |
 | **진행 가능** | P3 WCB 라벨 방향 감사 (`final_data.csv` 사용) | 모델 불필요 |
-| **진행 가능** | P7 시장 데이터 수집(ECOS·FRED) | ECOS 키는 `.env`의 `ECOS_API_KEY`(완료, 값은 읽지 않음). FRED는 `fredgraph.csv`로 키 없이 수집 |
+| **완료** | P7 시장 데이터 수집·정리(ECOS·FRED, 2026-11-06, 지수와는 병합 전) | ECOS 키는 `.env`의 `ECOS_API_KEY`(완료, 값은 읽지 않음). FRED는 `fredgraph.csv`로 키 없이 수집 |
 | **진행 가능** | P4 중 모델 없이 준비 가능한 부분(추론 스크립트 골격, 입력 형식 점검) | `torch`·`transformers` 설치됨, GPU 인식 |
 | **진행** | P4 분류기 재현 학습 | 공식 WCB 모델(HF gated) 승인 지연 → 공개 데이터로 재현 학습(D3). 학습·테스트 평가 완료(BOK 가중 F1 0.750, 논문 0.755). 추론(P4-c)은 P2 후 |
 | **해결** | HF 시드 분할 데이터 | 공개 데이터 `all_annotated_sentences_25000`을 `data/raw/wcb_hf/`에 받는다(P4-a). 분할 시드 944601 |
@@ -67,6 +67,9 @@
   | P3 | 11 | `27_audit_wcb_labels.py` |
   | P4-a/b | (10_download, 11_check, 12, 13) | `10_download_wcb_hf.py`, `11_check_wcb_hf.py`, `12_train_wcb_replica.py`, `13_eval_wcb_replica.py` |
   | P4-c | 14 | `28_infer_stance.py` |
+  | P2 검수 집계·후보 규칙 시뮬레이션 | - | `10d_aggregate_vote_audit.py`, `10e_simulate_v14.py` |
+  | P5-0 | 15 | `15_sample_topic_labels.py` (`--kind dev`만 구현) |
+  | P7 | 19, 20 | `19_fetch_market_data.py`, `20_build_market_panel.py` (+ 점검 `20b_check_decisions_vs_minutes.py`) |
   | P5 이후 | 14~26 | 미정(겹치는 번호는 이 표에 추가해 기록) |
 - 모든 스크립트는 입력·출력 경로를 인자로 받는다(`argparse`, 기본값은 이 문서의 경로). 저장소 루트에서 `uv run python scripts/<파일>`로 실행한다.
 - 중간 산출물은 `data/interim/`, 분석용 최종 데이터와 표는 `data/processed/`, 새로 받는 외부 원자료는 `data/raw/<출처>/`에 둔다. 기존 `data/raw/` 파일은 읽기 전용이므로 수정하지 않는다.
@@ -171,6 +174,8 @@
 - 서브에이전트 점검(참고용): 6건 중 2015-12-10 #27, 2016-04-19 #41은 "while holding / with the Base Rate kept …" 부대 구문이라 가이드 취지상 not_vote에 가깝다는 의견. 규칙은 바꾸지 않기로 했다(연구자 결정). 기존 과잉 3건(2016-07-14 #29 등)과 2022-11-24 #114(Base Rate 단어 없는 인상 지지 문장)는 미결로 남긴다.
 - 검수본: `data/interim/audit_votes_20_review.xlsx`(`scripts/10b_make_vote_review_xlsx.py`), 판정 병합 `scripts/10c_merge_vote_review.py`(키 = meeting_date, sent_id, type: 18문장이 candidate_miss와 boilerplate에 중복).
 
+**P2 검수 결과와 종료(2026-11-06, 가이드 v1.3 확정):** 20문서 검수(308행) 병합·집계 완료. 정밀도 98.8%(flagged 163 중 ok 161, over 2), 재현율 **상한** 88.9%(161/181, 놓침 20건; 후보 문장 밖 누락은 관측되지 않아 상한), 도입 문장 35건 모두 ok. 놓친 20건 중 매파·비둘기로 지수에 들어갈 문장 14건(매파 6, 비둘기 8), 과잉 제거로 빠진 매파·비둘기 문장 1건(비둘기). memo에 원인 코드가 없어 원인별 집계는 하지 않았다. 후보 규칙 시뮬레이션(F, S, N)은 적용하지 않았고 연구자가 **v1.3 확정**을 결정했다. 다만 F는 `sentences.csv`의 `is_vote_altF` 열(0→1 35건, `data/interim/vote_altF_changes.csv`)로만 추가했고 `is_vote`는 그대로다. S·N은 채택하지 않고 미결로 남긴다. 상세: `docs/progress/P2v13_2026-11-06.md`.
+
 ### P3. WCB 라벨 방향 감사 (전체)
 
 - **목적:** `final_data.csv`에서 원화·외환·주택·부채·금리차 관련 문장 전체의 방향이 5.3절 기준과 맞는지 감사해 "가이드 표 65 오기" 판단을 확정한다(계획서 4.4절, 5.5절).
@@ -236,6 +241,8 @@
 - 출력: `data/interim/topic_dev_sample.csv` — `sent_id, sent_raw, human_topic, ambiguous, memo`
 - **완료 기준:** 40문장 모두 `human_topic` 기입.
 
+**P5-0 진행 기록(2026-11-06, 사람 라벨 대기):** `scripts/15_sample_topic_labels.py --kind dev --n 40 --seed 20261106`. 코퍼스(`is_vote=0`, `is_boilerplate=0`, v1.3) 9,963문장 중 가이드 A4 예시와 같은 문장 9개를 뺀 9,954문장에서 시기별 문장 수에 비례해 2010~2011 2 / 2012~2023.2 24 / 2023.4~ 14문장. 뽑은 키 (meeting_date, sent_id)는 `data/interim/topic_dev_sample_ids.csv`에 고정했고, 검증 표본은 `eligible_for_validation()`(같은 스크립트)로 이 40문장과 A4 예시를 반드시 제외한다. 검수본 `data/interim/topic_dev_review.xlsx`(드롭다운, prev/next, 2번째 시트에 가이드 A1~A3 원문)에는 모델 예측·LLM 출력이 없다. 기록: `docs/progress/P5-0_2026-11-06.md`.
+
 **P5-a. LLM 토픽 라벨링**
 
 - 스크립트: `scripts/14_label_topics_llm.py` (`--model gpt-6.1-sol`, `--reasoning`, `--prompt-version`, `--in`, `--out`, `--cache`, `--dry-run`)
@@ -295,6 +302,7 @@
   - [ ] `S = Σ_k S^k` 항등식 검사(모든 회의에서 오차 1e-12 이하)
   - [ ] 해당 토픽 문장이 없는 회의의 `S^k = 0` 처리
   - [ ] `S_{t-1}`은 **직전 정례 회의**의 지수(긴급회의 제외, 계획서 6.3절). 첫 회의(2010-01-08)는 ΔS 결측 → 본 회귀 관측치 **161회**
+  - [ ] 민감도(강건성): `sentences.csv`의 `is_vote_altF`(대안 규칙 F, 0→1 35건)로 같은 방식의 지수를 한 번 더 만들어 본 지수와 비교한다(`stance_index_altF.csv`). 본 지수, ρ1 검정, `index-frozen`에는 쓰지 않는다
   - [ ] ρ1 검정: 금리 데이터를 읽지 않고 `ΔS_t = ρ0 + ρ1 ΔS_{t-1} + u_t`, HC3. 5% 유의하면 `include_dS_lag = true`
   - [ ] **지수 확정:** `stance_index.csv`를 커밋하지 않고(data/ 제외) SHA-256을 `rho1_test.json`에 기록한 뒤, 스크립트·프롬프트·설정 커밋에 **git tag `index-frozen`** 부착
 - **완료 기준:** (i) 163회(정례 162 + 긴급 1)의 행이 있고 `regular` 열로 구분. (ii) 항등식 검사 통과. (iii) `rho1_test.json` 존재. (iv) tag `index-frozen` 존재.
@@ -316,6 +324,7 @@
   - [ ] `D_freq`: 2017년 이후 1 (`meeting_master.csv`의 `freq_regime`과 일치하는지 대조: 0이 84, 1이 79)
   - [x] 한국어 의사록 공개일 수집 완료(D6). 공개 시각은 수집되지 않았다. R9 사건일은 오전 공개이므로 공개 당일로 확정되어 시각이 필요 없다(계획서 4.1·8절)
   - [ ] `scripts/20`에는 지수 파일을 읽는 코드가 없어야 한다(코드 리뷰 항목)
+- **P7 진행 기록(2026-11-06, 완료):** ECOS 722Y001/0101000(기준금리 일별), 817Y002/010200000(국고채 3년), 817Y002/010210000(국고채 10년)과 FRED DGS2, DGS10, DFEDTARU를 `data/raw/market/`에 저장(읽기 전용). `market_events.csv`(정례 162회), `inversion_regimes.csv` 생성. 결측 0, `D_freq` 일치(정례 162회 기준 0이 84, 1이 78; 79는 긴급회의 포함 163회 기준), 긴급 인하(2020-03-17 반영)는 2020-04-09 `d_i`에 섞이지 않음, 정례 회의 기준금리 변경 34건은 모두 회의 당일 계열에 반영. 역전 구간: 3차 16회(2018-04-12~2020-02-27), 4차 33회(2022-08-25~2026-08-27; 2022-07-13은 `Spread = 0.00`이라 `< 0` 정의에서 제외, 추정치 약 34와의 차이). 28개 공개일 모두 한국 영업일. 상세: `docs/progress/P7_2026-11-06.md`.
 - **완료 기준:** (i) 모든 정례 회의일에 `dY3`, `dY10`, `d_i`가 결측 없이 있다(결측이 있으면 사유 목록). (ii) `D_inv`가 `inversion_regimes.csv`의 구간과 일치. (iii) `ko_release_dates.csv`의 28회 공개일이 `market_events.csv`와 날짜 정렬이 되는지(공개일이 한국 영업일인지) 확인.
 
 ### P8. 본 회귀
@@ -346,6 +355,7 @@
   - `figures/fig1_index_and_rate.png`, `fig2_topic_paths.png`, `fig3_regime_paths.png`
 - **작업 목록**
   - [ ] R1 동결 회의(`d_i = 0`), R2 수준 `S_t`, R3 Newey-West, R4 `ΔS×D_{2025+}`, R5 연속 `Spread_{t-1}`(β3<0이 증폭), R6 3차·4차 분리 더미, R7 τ=1(2일 창), R8 정례 외 회의 포함, R9 의사록 공개일 사건 분석(사건일 = `ko_release_date`, 한국어 공개일 당일; 2023.4 이후 28회, 입력 `data/metadata/ko_release_dates.csv`; 계획서 8절), R10 Cook's distance, R11 `ΔS_{t-1}` 추가(본 사양에 이미 포함된 경우 해당 없음 표기)
+  - [ ] 민감도: P6의 `stance_index_altF.csv`(`is_vote_altF` 기준 지수)로 모형 1~3을 재추정해 Table 4 부록 행 `altF`로 보고(R 번호 없음, 본 결과를 바꾸지 않는다)
   - [ ] 로컬 프로젝션: 지평 h마다 OLS 따로, HC3, 90% 신뢰구간, 국면별 `β1(h)`(비역전)와 `β1(h)+β3(h)`(역전). 토픽별 경로(Macro, FinStab)는 탐색적으로 표시
   - [ ] 그림 스타일 결정이 필요하면 `dataviz` 가이드를 따른다
 - **완료 기준:** Table 4에 R1~R11 전부 행이 있고(해당 없음은 사유), Figure 1~3이 생성된다. 표본 수가 극히 적은 하위표본(예: R1 동결 회의)은 `n`을 반드시 같이 표시.
