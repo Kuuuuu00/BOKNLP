@@ -2,7 +2,7 @@
 
 Rules: docs/annotation_guide.md C2 (v1.3) and C3.
 uv run python scripts/10_split_sentences.py
-Outputs (data/interim): sentences.csv, sentence_count_by_meeting.csv, split_diagnostics/*.csv, audit_votes_20.csv
+Outputs (data/interim): sentences.csv (is_vote_altF = alternative rule F, sensitivity only), vote_altF_changes.csv, sentence_count_by_meeting.csv, split_diagnostics/*.csv, audit_votes_20.csv
 """
 import argparse
 import re
@@ -118,6 +118,15 @@ def classify(s):
     return 0, "", 0, ""
 
 
+def vote_alt_f(s, is_vote, is_boilerplate):
+    """Alternative F (NOT the analysis rule; identified after the 20-document review): FUTURE words that come only after the
+    concrete decision phrase do not block the no-B rule. Equals is_vote everywhere except the last branch of classify()."""
+    if is_vote or is_boilerplate:
+        return int(is_vote)
+    c = CONCRETE.search(s)
+    return int(bool(BASE.search(s) and ACTION.search(s) and CUE.search(s) and c and not FUTURE.search(s[: c.end()])))
+
+
 def era_of(d):
     return "2010-2011" if d < "2012-01-01" else ("2012-2023.2" if d < "2023-03-01" else "2023.4+")
 
@@ -140,12 +149,14 @@ def main():
                 for s in split_paragraph(par, seg):
                     n += 1
                     iv, vr, ib, br = classify(s)
+                    alt = vote_alt_f(s, iv, ib)
                     rows.append({"meeting_date": d, "sent_id": n, "block_id": b["block_id"], "section": b["section"],
                                  "sent_raw": s, "sent_norm": re.sub(r"\s+", " ", s.lower()).strip(),
-                                 "is_vote": iv, "vote_rule": vr, "is_boilerplate": ib, "boilerplate_rule": br,
+                                 "is_vote": iv, "vote_rule": vr, "is_vote_altF": alt, "is_boilerplate": ib, "boilerplate_rule": br,
                                  "n_chars": len(s)})
     sent = pd.DataFrame(rows)
     sent.to_csv(INTERIM / "sentences.csv", index=False, encoding="utf-8-sig")
+    sent[sent["is_vote_altF"] != sent["is_vote"]].to_csv(INTERIM / "vote_altF_changes.csv", index=False, encoding="utf-8-sig")
     diagnostics(sent, args)
 
 
